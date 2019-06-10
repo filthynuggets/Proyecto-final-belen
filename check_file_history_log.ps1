@@ -7,7 +7,7 @@ $yesterday = (Get-Date) - (New-TimeSpan -Day 1)
 
 try
 {
-    $CritEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-Known Folders API Service'; Level= 2,1; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
+    $CritEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-FileHistory-Engine/BackupLog'; Level= 2,1; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
     $CritNbEv = $CritEvents -replace '\D+',''
 }
 catch
@@ -16,7 +16,7 @@ catch
 
 try
 {
-    $WarnEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-Known Folders API Service'; Level= 3; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
+    $WarnEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-FileHistory-Engine/BackupLog'; Level= 3; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
     $WarnNbEv = $WarnEvents -replace '\D+',''
 }
 catch
@@ -25,7 +25,7 @@ catch
 
 try
 {
-    $OkEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-Known Folders API Service'; Level= 4; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
+    $OkEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-FileHistory-Engine/BackupLog'; Level= 4; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
     $OkNbEv = $OkEvents -replace '\D+',''
 }
 catch
