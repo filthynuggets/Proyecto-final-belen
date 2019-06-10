@@ -3,12 +3,12 @@ $returnStateWarning = 1
 $returnStateCritical = 2
 $returnStateUnknown = 3
 
-$date = (Get-Date).AddDays(-1)
+$yesterday = (Get-Date) - (New-TimeSpan -Day 1)
 
 try
 {
-    $CritEvents = Get-WinEvent @{Path = "C:\Windows\System32\winevt\Logs\Microsoft-Windows-FileHistory-Engine%4BackupLog.evtx" ; StartTime = $date; Level = 2,1} -ErrorAction SilentlyContinue
-    $CritNbEv = $CritEvents.Count
+    $CritEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-Known Folders API Service'; Level= 2,1; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
+    $CritNbEv = $CritEvents -replace '\D+',''
 }
 catch
 {
@@ -16,8 +16,8 @@ catch
 
 try
 {
-    $WarnEvents = Get-WinEvent @{Path = "C:\Windows\System32\winevt\Logs\Microsoft-Windows-FileHistory-Engine%4BackupLog.evtx" ; StartTime = $date; Level = 3} -ErrorAction SilentlyContinue
-    $WarnNbEv = $WarnEvents.Count
+    $WarnEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-Known Folders API Service'; Level= 3; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
+    $WarnNbEv = $WarnEvents -replace '\D+',''
 }
 catch
 {
@@ -25,13 +25,12 @@ catch
 
 try
 {
-    $OkEvents = Get-WinEvent @{Path = "C:\Windows\System32\winevt\Logs\Microsoft-Windows-FileHistory-Engine%4BackupLog.evtx" ; StartTime = $date; ID = 4 } -ErrorAction SilentlyContinue
-    $OkNbEv = $OkEvents.Count
+    $OkEvents = Get-WinEvent -FilterHashtable @{ LogName='Microsoft-Windows-Known Folders API Service'; Level= 4; StartTime=$Yesterday } -ErrorAction SilentlyContinue | Measure-Object -Line | Out-String
+    $OkNbEv = $OkEvents -replace '\D+',''
 }
 catch
 {
 }
-
 
 
 
@@ -39,33 +38,22 @@ if (($CritNbEv -eq $Null -and $CritEvents -eq $Null) -or $CritNbEv -eq 0)
 {
 $CritNbEv = 0
 }
-else
-{
-$CritNbEv = 1
-}
-
 
 if ($WarnNbEv -eq $Null -and $WarnEvents -eq $Null )
 {
     $WarnNbEv = 0
-}
-else
-{
-    $WarnNbEv = 1
 }
 
 if ($OkNbEv -eq $Null -and $OkEvents -eq $Null )
 {
     $OkNbEv = 0
 }
-else
-{
-    $OkNbEv = 1
+
+if ($CritNbEv -ne 0 ) {
+    $message = "CRITICAL - Found {0} errors in Microsoft-Windows-Backup event log" -f $CritNbEv
+    Write-Host $message
+    exit $returnStateCritical
 }
-
-
-
-
 
 if ($WarnNbEv -ne 0) {
     $message = "WARNING - Found {0} warning in Microsoft-Windows-Backup event log" -f $WarnNbEv
@@ -77,12 +65,6 @@ if ($OkNbEv -ne 0 ) {
     $message = "OK - No errors in Microsoft-Windows-Backup log "
     Write-Host $message
     exit $returnStateOK
-}
-
-if ($CritNbEv -ne 0 ) {
-    $message = "CRITICAL - Found {0} errors in Microsoft-Windows-Backup event log" -f $CritNbEv
-    Write-Host $message
-    exit $returnStateCritical
 }
 
 Write-Host "UNKNOW - Not found backups events"
